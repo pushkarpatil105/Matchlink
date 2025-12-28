@@ -3,13 +3,6 @@ import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Heart, X, Briefcase, User, Sparkles, TrendingUp, Users, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Papa from 'papaparse';
 
-// User profile with skills
-const userProfile = {
-  name: "Alex Developer",
-  skills: ["React", "JavaScript", "Python", "Node.js", "UI/UX", "TypeScript"],
-  location: "Indore, India"
-};
-
 const App = () => {
   const [internships, setInternships] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,9 +10,19 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('discover');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // User profile state
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [userError, setUserError] = useState(null);
+  
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
     fetchInternships();
+    fetchUserProfile();
   }, []);
 
   const fetchInternships = async () => {
@@ -118,6 +121,77 @@ const App = () => {
 
   const handleButtonClick = (direction) => {
     handleSwipe(direction);
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      setUserLoading(true);
+      setUserError(null);
+
+      const userURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSUMH_Lt6BLN8Dm1J5-oT1RDrXAtpM8OfJ-qNS50qovHrm9VGINraW1ZYvG9hadc41eEovCPXar1v7U/pub?gid=1307811639&single=true&output=csv';
+
+      console.log('👤 Fetching user profile from:', userURL);
+
+      Papa.parse(userURL, {
+        download: true,
+        header: false,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        complete: (results) => {
+          if (results.data && results.data.length > 0) {
+            // Find header row
+            let headerRowIndex = 0;
+            let headerRow = [];
+            
+            for (let i = 0; i < results.data.length; i++) {
+              const row = results.data[i];
+              if (row.some(cell => cell && cell.toString().trim().length > 0)) {
+                headerRow = row;
+                headerRowIndex = i;
+                break;
+              }
+            }
+
+            if (headerRow.length === 0) {
+              throw new Error('Could not find header row in user sheet');
+            }
+
+            // Get first data row as current user
+            const firstDataRow = results.data[headerRowIndex + 1];
+            if (firstDataRow) {
+              const userObj = {};
+              headerRow.forEach((header, index) => {
+                const cleanHeader = header.trim();
+                userObj[cleanHeader] = firstDataRow[index] || '';
+              });
+              
+              console.log('✅ User profile loaded:', userObj);
+              setCurrentUser(userObj);
+              setUserLoading(false);
+            } else {
+              throw new Error('No user data found in sheet');
+            }
+          } else {
+            throw new Error('User sheet returned empty data');
+          }
+        },
+        error: (error) => {
+          console.error('❌ User profile fetch error:', error);
+          setUserError(`Failed to load profile: ${error.message}`);
+          setUserLoading(false);
+        }
+      });
+    } catch (error) {
+      console.error('❌ User profile error:', error);
+      setUserError(error.message);
+      setUserLoading(false);
+    }
+  };
+
+  const showToastNotification = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   // Helper function to parse percentage values
@@ -446,60 +520,170 @@ const App = () => {
     </div>
   );
 
-  const ProfileView = () => (
-    <div className="max-w-4xl mx-auto px-6 py-8 overflow-y-auto h-full">
-      <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-3xl border border-purple-500/30 p-10 shadow-2xl">
-        <div className="text-center mb-10">
-          <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-purple-500/50">
-            <User className="w-16 h-16 text-white" />
-          </div>
-          <h2 className="text-4xl font-bold text-white mb-2">{userProfile.name}</h2>
-          <p className="text-gray-400 text-lg">📍 {userProfile.location}</p>
-        </div>
-
-        <div className="mb-10">
-          <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            <Sparkles className="text-purple-400" />
-            Your Skills
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {userProfile.skills.map((skill, index) => (
-              <motion.span
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-gradient-to-r from-purple-600/40 to-pink-600/40 text-white px-5 py-3 rounded-full border border-purple-500/50 shadow-lg text-lg font-medium"
-              >
-                {skill}
-              </motion.span>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/30 text-center">
-            <Users className="w-12 h-12 text-green-400 mx-auto mb-3" />
-            <p className="text-4xl font-bold text-white mb-1">{matches.length}</p>
-            <p className="text-gray-400">Matches</p>
-          </div>
-          <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/30 text-center">
-            <Briefcase className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-            <p className="text-4xl font-bold text-white mb-1">{currentIndex}</p>
-            <p className="text-gray-400">Reviewed</p>
-          </div>
-          <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/30 text-center">
-            <Sparkles className="w-12 h-12 text-pink-400 mx-auto mb-3" />
-            <p className="text-4xl font-bold text-white mb-1">{internships.length}</p>
-            <p className="text-gray-400">Available</p>
+  const CircularProgress = ({ percentage }) => {
+    const circumference = 2 * Math.PI * 45;
+    const offset = circumference - (percentage / 100) * circumference;
+    
+    return (
+      <div className="relative w-32 h-32">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="3" />
+          <motion.circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="#a855f7"
+            strokeWidth="3"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-3xl font-bold text-white">{percentage}%</p>
+            <p className="text-xs text-gray-400">Strength</p>
           </div>
         </div>
       </div>
-    </div>
+    );
+  };
+
+  const ProfileView = () => {
+    if (userLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center bg-gray-800/50 backdrop-blur-xl p-12 rounded-3xl border border-purple-500/30">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-purple-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Loading Profile...</h2>
+            <p className="text-gray-400">Fetching your profile data</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (userError) {
+      return (
+        <div className="flex items-center justify-center h-full px-4">
+          <div className="text-center bg-red-900/20 backdrop-blur-xl p-12 rounded-3xl border border-red-500/30 max-w-2xl">
+            <AlertCircle className="w-20 h-20 text-red-400 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold text-white mb-3">Profile Error</h2>
+            <p className="text-gray-300">{userError}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!currentUser) return null;
+
+    const skills = currentUser['my_skills'] ? currentUser['my_skills'].split(',').map(s => s.trim()) : [];
+    const fullName = currentUser['full_name'] || 'User';
+    const major = currentUser['major'] || 'Field of Study';
+    const bio = currentUser['bio'] || 'Your bio goes here';
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=a855f7&color=fff&bold=true&size=128`;
+
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8 overflow-y-auto h-full">
+        {/* Main Profile Card */}
+        <div className="bg-gradient-to-br from-slate-800/90 via-slate-900/90 to-slate-950/90 backdrop-blur-xl rounded-3xl border border-purple-500/30 p-10 shadow-2xl mb-6">
+          {/* Header Section */}
+          <div className="text-center mb-10">
+            <motion.img
+              src={avatarUrl}
+              alt={fullName}
+              className="w-32 h-32 rounded-full mx-auto mb-6 shadow-2xl shadow-purple-500/50 border-4 border-purple-500/30"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            />
+            <h2 className="text-5xl font-bold text-white mb-2">{fullName}</h2>
+            <p className="text-xl text-purple-400 font-semibold mb-4">{major}</p>
+            <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto">{bio}</p>
+          </div>
+
+          {/* Skills Section */}
+          <div className="mb-10 pb-10 border-b border-gray-700/50">
+            <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+              <Sparkles className="text-purple-400" />
+              Skills
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {skills.length > 0 ? (
+                skills.map((skill, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="bg-white/10 backdrop-blur-md text-white px-5 py-3 rounded-full border border-purple-400/50 shadow-lg text-sm font-medium hover:bg-white/20 transition-all"
+                  >
+                    {skill}
+                  </motion.span>
+                ))
+              ) : (
+                <p className="text-gray-400">No skills added yet</p>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Total Swipes */}
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur p-6 rounded-2xl border border-blue-500/30 text-center hover:border-blue-500/50 transition-all">
+              <TrendingUp className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+              <p className="text-4xl font-bold text-white mb-1">{currentIndex}</p>
+              <p className="text-gray-400 font-medium">Total Swipes</p>
+            </div>
+
+            {/* Matches */}
+            <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur p-6 rounded-2xl border border-green-500/30 text-center hover:border-green-500/50 transition-all">
+              <Heart className="w-12 h-12 text-green-400 mx-auto mb-3" fill="currentColor" />
+              <p className="text-4xl font-bold text-white mb-1">{matches.length}</p>
+              <p className="text-gray-400 font-medium">Matches</p>
+            </div>
+
+            {/* Profile Strength */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur p-6 rounded-2xl border border-purple-500/30 flex flex-col items-center justify-center hover:border-purple-500/50 transition-all">
+              <CircularProgress percentage={85} />
+            </div>
+          </div>
+
+          {/* Edit Profile Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => showToastNotification('🚀 Coming Soon in Version 2.0')}
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-semibold py-3 rounded-2xl transition-all shadow-lg shadow-purple-500/30 border border-purple-400/30"
+          >
+            Edit Profile
+          </motion.button>
+        </div>
+      </div>
+    );
+  };
+
+  // Toast Notification Component
+  const Toast = () => (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: showToast ? 1 : 0, y: showToast ? 0 : -20 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed top-6 right-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-purple-500/50 border border-purple-400/30 z-50 pointer-events-none"
+    >
+      <p className="font-semibold">{toastMessage}</p>
+    </motion.div>
   );
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex flex-col overflow-hidden">
+      <Toast />
       <header className="bg-gray-900/50 backdrop-blur-xl border-b border-purple-500/20 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-3">
