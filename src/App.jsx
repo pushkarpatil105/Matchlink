@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { Heart, X, Briefcase, User, Sparkles, TrendingUp, Users, AlertCircle } from 'lucide-react';
+import { Heart, X, Briefcase, User, Sparkles, TrendingUp, Users, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Papa from 'papaparse';
 
 // User profile with skills
@@ -120,6 +120,34 @@ const App = () => {
     handleSwipe(direction);
   };
 
+  // Helper function to parse percentage values
+  const parsePercentage = (value) => {
+    if (!value || value === 'N/A') return null;
+    const num = parseInt(value.toString().replace('%', ''));
+    return isNaN(num) ? null : num;
+  };
+
+  const ProgressBar = ({ percentage, label }) => {
+    if (percentage === null) return <p className="text-gray-400 text-sm">{label}: N/A</p>;
+    
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between items-center mb-1">
+          <p className="text-gray-400 text-sm">{label}</p>
+          <span className="text-white font-semibold text-sm">{percentage}%</span>
+        </div>
+        <div className="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden border border-gray-600/30">
+          <motion.div
+            className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const SwipeCard = ({ internship, index }) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-300, 300], [-30, 30]);
@@ -136,9 +164,16 @@ const App = () => {
     const role = internship['Role'] || internship['role'] || 'Internship Role';
     const location = internship['Location'] || internship['location'] || '';
     const description = internship['Description'] || internship['description'] || '';
-    const ghostRate = internship['Ghost Rate'] || internship['ghost_rate'] || 'N/A';
-    const acceptanceRate = internship['Acceptance Rate'] || internship['acceptance_rate'] || 'N/A';
+    const ghostRateRaw = internship['Ghost Rate%'] || internship['Ghost Rate'] || internship['ghost_rate'] || 'N/A';
+    const acceptanceRateRaw = internship['Acceptance rate%'] || internship['Acceptance Rate'] || internship['acceptance_rate'] || 'N/A';
     const requiredSkills = internship['Required Skills'] || internship['required_skills'] || '';
+    
+    const ghostRateNum = parsePercentage(ghostRateRaw);
+    const acceptanceRateNum = parsePercentage(acceptanceRateRaw);
+    
+    const isHighGhostRate = ghostRateNum !== null && ghostRateNum > 40;
+    const ghostColor = isHighGhostRate ? 'text-red-400' : 'text-green-400';
+    const ghostBgColor = isHighGhostRate ? 'bg-red-500/10' : 'bg-green-500/10';
 
     return (
       <motion.div
@@ -173,9 +208,12 @@ const App = () => {
             <div>
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                  <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-                    {companyName}
-                  </h2>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-4xl font-bold text-white drop-shadow-lg">
+                      {companyName}
+                    </h2>
+                    <CheckCircle2 className="w-7 h-7 text-blue-400 flex-shrink-0" fill="currentColor" />
+                  </div>
                   <div className="flex items-center gap-2 text-purple-300">
                     <Briefcase className="w-5 h-5" />
                     <p className="text-xl">{role}</p>
@@ -206,19 +244,29 @@ const App = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 backdrop-blur-sm p-5 rounded-2xl border border-purple-500/30">
-                <h3 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm p-5 rounded-2xl border border-blue-500/30">
+                <h3 className="text-blue-300 font-semibold mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  Reality Check
+                  Reality Stats
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-900/50 p-3 rounded-xl">
-                    <p className="text-gray-400 text-sm">Ghost Rate</p>
-                    <p className="text-2xl font-bold text-red-400">{ghostRate}</p>
-                  </div>
-                  <div className="bg-gray-900/50 p-3 rounded-xl">
-                    <p className="text-gray-400 text-sm">Accept Rate</p>
-                    <p className="text-2xl font-bold text-green-400">{acceptanceRate}</p>
+                <div className="space-y-4">
+                  {/* Acceptance Rate Progress Bar */}
+                  <ProgressBar percentage={acceptanceRateNum} label="Acceptance Rate" />
+                  
+                  {/* Ghost Rate Color-Coded */}
+                  <div className={`${ghostBgColor} p-3 rounded-xl border border-gray-600/30`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{isHighGhostRate ? '👻' : '✨'}</span>
+                        <p className="text-gray-400 text-sm">Ghost Rate</p>
+                      </div>
+                      <p className={`text-2xl font-bold ${ghostColor}`}>
+                        {ghostRateNum !== null ? `${ghostRateNum}%` : 'N/A'}
+                      </p>
+                    </div>
+                    {isHighGhostRate && (
+                      <p className="text-red-300 text-xs mt-2">⚠️ High ghosting rate - responses may be slow</p>
+                    )}
                   </div>
                 </div>
               </div>
