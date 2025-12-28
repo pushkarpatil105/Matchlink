@@ -105,9 +105,9 @@ const App = () => {
   };
 
   const calculateSkillMatch = (internship) => {
-    if (!currentUser || !currentUser['my_skills']) return 75; // Default match percentage
+    if (!currentUser || !currentUser['My Skills']) return 75; // Default match percentage
     
-    const userSkills = currentUser['my_skills'].split(',').map(s => s.trim().toLowerCase());
+    const userSkills = currentUser['My Skills'].split(',').map(s => s.trim().toLowerCase());
     const requiredSkills = (internship['Skills Required'] || internship['required_skills'] || '').toLowerCase();
     
     const matchedSkills = userSkills.filter(skill => 
@@ -588,10 +588,11 @@ const App = () => {
 
     if (!currentUser) return null;
 
-    const skills = currentUser['my_skills'] ? currentUser['my_skills'].split(',').map(s => s.trim()) : [];
-    const fullName = currentUser['full_name'] || 'User';
-    const major = currentUser['major'] || 'Field of Study';
-    const bio = currentUser['bio'] || 'Your bio goes here';
+    // Using row 1 (first data row) from User CSV
+    const skills = currentUser['My Skills'] ? currentUser['My Skills'].split(',').map(s => s.trim()) : [];
+    const fullName = currentUser['Full Name'] || 'User';
+    const major = currentUser['Major'] || 'Field of Study';
+    const bio = currentUser['Bio'] || 'Your bio goes here';
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=a855f7&color=fff&bold=true&size=128`;
 
     return (
