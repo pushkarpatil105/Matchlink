@@ -243,9 +243,38 @@ const App = () => {
     const role = internship['Role'] || internship['role'] || 'Internship Role';
     const location = internship['Location'] || internship['location'] || '';
     const description = internship['Description'] || internship['description'] || '';
-    const ghostRateRaw = internship['Ghost Rate%'] || internship['Ghost Rate'] || internship['ghost_rate'] || 'N/A';
-    const acceptanceRateRaw = internship['Acceptance rate%'] || internship['Acceptance Rate'] || internship['acceptance_rate'] || 'N/A';
+    
+    // Find Acceptance Rate - handle multiple column name variations
+    let acceptanceRateRaw = 'N/A';
+    for (const key of Object.keys(internship)) {
+      if (key.toLowerCase().includes('acceptance')) {
+        acceptanceRateRaw = internship[key];
+        break;
+      }
+    }
+    if (acceptanceRateRaw === 'N/A') {
+      acceptanceRateRaw = internship['Acceptance rate%'] || internship['Acceptance Rate'] || internship['acceptance_rate'] || 'N/A';
+    }
+    
+    // Find Ghost Rate - handle multiple column name variations
+    let ghostRateRaw = 'N/A';
+    for (const key of Object.keys(internship)) {
+      if (key.toLowerCase().includes('ghost')) {
+        ghostRateRaw = internship[key];
+        break;
+      }
+    }
+    if (ghostRateRaw === 'N/A') {
+      ghostRateRaw = internship['Ghost Rate%'] || internship['Ghost Rate'] || internship['ghost_rate'] || 'N/A';
+    }
+    
     const requiredSkills = internship['Required Skills'] || internship['required_skills'] || '';
+    
+    // Debug: log the first card to see column names
+    if (index === 0) {
+      console.log('🔍 Internship object keys:', Object.keys(internship));
+      console.log('📊 Rates:', { acceptanceRateRaw, ghostRateRaw });
+    }
     
     const ghostRateNum = parsePercentage(ghostRateRaw);
     const acceptanceRateNum = parsePercentage(acceptanceRateRaw);
