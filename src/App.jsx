@@ -105,11 +105,16 @@ const App = () => {
   };
 
   const calculateSkillMatch = (internship) => {
-    const requiredSkills = (internship['Required Skills'] || internship['required_skills'] || '').toLowerCase();
-    const matchedSkills = userProfile.skills.filter(skill => 
-      requiredSkills.includes(skill.toLowerCase())
+    if (!currentUser || !currentUser['my_skills']) return 75; // Default match percentage
+    
+    const userSkills = currentUser['my_skills'].split(',').map(s => s.trim().toLowerCase());
+    const requiredSkills = (internship['Skills Required'] || internship['required_skills'] || '').toLowerCase();
+    
+    const matchedSkills = userSkills.filter(skill => 
+      requiredSkills.includes(skill)
     );
-    return Math.min(100, Math.round((matchedSkills.length / Math.max(userProfile.skills.length, 1)) * 100));
+    
+    return Math.min(100, Math.round((matchedSkills.length / Math.max(userSkills.length, 1)) * 100));
   };
 
   const handleSwipe = (direction) => {
