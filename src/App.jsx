@@ -228,9 +228,8 @@ const App = () => {
 
   // Helper function to parse percentage values
   const parsePercentage = (value) => {
-    if (!value || value === "N/A") return null;
+    if (!value || value === "..." || value === "N/A") return null;
     
-    // Convert to string and trim
     const str = value.toString().trim();
     
     // If it has a % sign, remove it and parse as float
@@ -254,7 +253,7 @@ const App = () => {
 
   const ProgressBar = ({ percentage, label }) => {
     if (percentage === null)
-      return <p className="text-gray-400 text-sm">{label}: N/A</p>;
+      return <p className="text-gray-400 text-sm">{label}: ...</p>;
 
     return (
       <div className="space-y-1">
@@ -295,37 +294,10 @@ const App = () => {
     const description =
       internship["Description"] || internship["description"] || "";
 
-    // Find Acceptance Rate - handle multiple column name variations
-    let acceptanceRateRaw = "N/A";
-    for (const key of Object.keys(internship)) {
-      if (key.toLowerCase().includes("acceptance")) {
-        acceptanceRateRaw = internship[key];
-        break;
-      }
-    }
-    if (acceptanceRateRaw === "N/A") {
-      acceptanceRateRaw =
-        internship["Acceptance rate%"] ||
-        internship["Acceptance Rate"] ||
-        internship["acceptance_rate"] ||
-        "N/A";
-    }
-
-    // Find Ghost Rate - handle multiple column name variations
-    let ghostRateRaw = "N/A";
-    for (const key of Object.keys(internship)) {
-      if (key.toLowerCase().includes("ghost")) {
-        ghostRateRaw = internship[key];
-        break;
-      }
-    }
-    if (ghostRateRaw === "N/A") {
-      ghostRateRaw =
-        internship["Ghost Rate%"] ||
-        internship["Ghost Rate"] ||
-        internship["ghost_rate"] ||
-        "N/A";
-    }
+    // Extract exact column names from CSV - use actual header names
+    const acceptanceRateRaw = internship["Acceptance rate%"] || internship["acceptance_rate"] || "...";
+    const ghostRateRaw = internship["Ghost Rate%"] || internship["ghost_rate"] || "...";
+    const responseDaysRaw = internship["Avg. response Days"] || internship["avg_response_days"] || "...";
 
     const requiredSkills =
       internship["Required Skills"] || internship["required_skills"] || "";
@@ -333,7 +305,7 @@ const App = () => {
     // Debug: log the first card to see column names
     if (index === 0) {
       console.log("🔍 Internship object keys:", Object.keys(internship));
-      console.log("📊 Rates:", { acceptanceRateRaw, ghostRateRaw });
+      console.log("📊 Rates:", { acceptanceRateRaw, ghostRateRaw, responseDaysRaw });
     }
 
     const ghostRateNum = parsePercentage(ghostRateRaw);
@@ -439,7 +411,7 @@ const App = () => {
                         <p className="text-gray-400 text-sm">Ghost Rate</p>
                       </div>
                       <p className={`text-2xl font-bold ${ghostColor}`}>
-                        {ghostRateNum !== null ? `${ghostRateNum}%` : "N/A"}
+                        {ghostRateNum !== null ? `${ghostRateNum}%` : "..."}
                       </p>
                     </div>
                     {isHighGhostRate && (
@@ -448,6 +420,21 @@ const App = () => {
                       </p>
                     )}
                   </div>
+
+                  {/* Response Days */}
+                  {responseDaysRaw !== "..." && (
+                    <div className="bg-indigo-900/30 p-3 rounded-xl border border-indigo-600/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">⏱️</span>
+                          <p className="text-gray-400 text-sm">Avg Response Time</p>
+                        </div>
+                        <p className="text-2xl font-bold text-indigo-300">
+                          {responseDaysRaw !== "..." ? `${Math.round(responseDaysRaw)} days` : "..."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
