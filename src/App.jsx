@@ -344,8 +344,8 @@ const App = () => {
             </div>
           </motion.div>
 
-          <div className="relative p-8 h-full flex flex-col justify-between overflow-y-auto">
-            <div>
+          <div className="relative p-8 h-full flex flex-col">
+            <div className="flex-shrink-0">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -393,7 +393,7 @@ const App = () => {
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pb-4">
               <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm p-5 rounded-2xl border border-blue-500/30">
                 <h3 className="text-blue-300 font-semibold mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
