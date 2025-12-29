@@ -35,12 +35,6 @@ const App = () => {
     fetchUserProfile();
   }, []);
 
-  const cleanNumericValue = (value) => {
-    if (!value) return "";
-    // Remove % signs and any non-numeric characters except decimal points
-    return value.toString().replace("%", "").trim();
-  };
-
   const fetchInternships = async () => {
     try {
       setLoading(true);
@@ -81,9 +75,9 @@ const App = () => {
               throw new Error("Could not find header row in sheet");
             }
 
-            console.log("📋 Raw headers:", headerRow);
+            console.log("📋 Headers:", headerRow);
 
-            // Convert remaining rows to objects using the header row with sanitized headers
+            // Convert remaining rows to objects using the header row
             const validData = results.data
               .slice(headerRowIndex + 1)
               .filter((row) =>
@@ -92,20 +86,15 @@ const App = () => {
               .map((row) => {
                 const obj = {};
                 headerRow.forEach((header, index) => {
-                  // Sanitize header: trim and lowercase
-                  const sanitizedHeader = header.trim().toLowerCase();
-                  const rawValue = row[index] || "";
-                  obj[sanitizedHeader] = rawValue;
+                  const cleanHeader = header.trim();
+                  obj[cleanHeader] = row[index] || "";
                 });
                 return obj;
               })
-              .filter((row) => row["company name"] || row["company"]);
+              .filter((row) => row["Company Name"] || row["company"]);
 
             console.log("✨ Valid rows after filtering:", validData.length);
-            if (validData.length > 0) {
-              console.log("🔍 First row sample keys:", Object.keys(validData[0]));
-              console.log("🔍 First row sample data:", validData[0]);
-            }
+            console.log("🔍 First row sample:", validData[0]);
 
             if (validData.length > 0) {
               setInternships(validData);
@@ -131,15 +120,13 @@ const App = () => {
   };
 
   const calculateSkillMatch = (internship) => {
-    if (!currentUser || (!currentUser["My Skills"] && !currentUser["my skills"])) return 75; // Default match percentage
+    if (!currentUser || !currentUser["My Skills"]) return 75; // Default match percentage
 
-    const userSkillsStr = currentUser["My Skills"] || currentUser["my skills"] || "";
-    const userSkills = userSkillsStr
+    const userSkills = currentUser["My Skills"]
       .split(",")
       .map((s) => s.trim().toLowerCase());
     const requiredSkills = (
       internship["Skills Required"] ||
-      internship["skills required"] ||
       internship["required_skills"] ||
       ""
     ).toLowerCase();
@@ -206,13 +193,11 @@ const App = () => {
             if (firstDataRow) {
               const userObj = {};
               headerRow.forEach((header, index) => {
-                // Sanitize header: trim and lowercase
-                const sanitizedHeader = header.trim().toLowerCase();
-                userObj[sanitizedHeader] = firstDataRow[index] || "";
+                const cleanHeader = header.trim();
+                userObj[cleanHeader] = firstDataRow[index] || "";
               });
 
-              console.log("✅ User profile loaded with keys:", Object.keys(userObj));
-              console.log("✅ User profile data:", userObj);
+              console.log("✅ User profile loaded:", userObj);
               setCurrentUser(userObj);
               setUserLoading(false);
             } else {
@@ -303,28 +288,28 @@ const App = () => {
 
     const skillMatch = calculateSkillMatch(internship);
     const companyName =
-      internship["Company Name"] || internship["company name"] || internship["company"] || "Company";
+      internship["Company Name"] || internship["company"] || "Company";
     const role = internship["Role"] || internship["role"] || "Internship Role";
     const location = internship["Location"] || internship["location"] || "";
     const description =
       internship["Description"] || internship["description"] || "";
 
-    // Extract exact column names from CSV - fallback through various formats
-    const acceptanceRateRaw = cleanNumericValue(internship["Acceptance rate%"] || internship["acceptance rate%"] || internship["acceptance_rate"] || "");
-    const ghostRateRaw = cleanNumericValue(internship["Ghost Rate%"] || internship["ghost rate%"] || internship["ghost_rate"] || "");
-    const responseDaysRaw = cleanNumericValue(internship["Avg. response Days"] || internship["avg. response days"] || internship["avg_response_days"] || "");
+    // Extract exact column names from CSV - use actual header names
+    const acceptanceRateRaw = internship["Acceptance rate%"] || internship["acceptance_rate"] || "...";
+    const ghostRateRaw = internship["Ghost Rate%"] || internship["ghost_rate"] || "...";
+    const responseDaysRaw = internship["Avg. response Days"] || internship["avg_response_days"] || "...";
 
     const requiredSkills =
-      internship["Skills Required"] || internship["skills required"] || internship["required_skills"] || "";
+      internship["Required Skills"] || internship["required_skills"] || "";
 
     // Debug: log the first card to see column names
     if (index === 0) {
       console.log("🔍 Internship object keys:", Object.keys(internship));
-      console.log("📊 Raw Rates:", { acceptanceRateRaw, ghostRateRaw, responseDaysRaw });
+      console.log("📊 Rates:", { acceptanceRateRaw, ghostRateRaw, responseDaysRaw });
     }
 
-    const ghostRateNum = parsePercentage(ghostRateRaw || "...");
-    const acceptanceRateNum = parsePercentage(acceptanceRateRaw || "...");
+    const ghostRateNum = parsePercentage(ghostRateRaw);
+    const acceptanceRateNum = parsePercentage(acceptanceRateRaw);
 
     const isHighGhostRate = ghostRateNum !== null && ghostRateNum > 40;
     const ghostColor = isHighGhostRate ? "text-red-400" : "text-green-400";
@@ -437,7 +422,7 @@ const App = () => {
                   </div>
 
                   {/* Response Days */}
-                  {responseDaysRaw && responseDaysRaw !== "..." && (
+                  {responseDaysRaw !== "..." && (
                     <div className="bg-indigo-900/30 p-3 rounded-xl border border-indigo-600/30">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -445,7 +430,7 @@ const App = () => {
                           <p className="text-gray-400 text-sm">Avg Response Time</p>
                         </div>
                         <p className="text-2xl font-bold text-indigo-300">
-                          {`${Math.round(parseFloat(responseDaysRaw))} days`}
+                          {responseDaysRaw !== "..." ? `${Math.round(responseDaysRaw)} days` : "..."}
                         </p>
                       </div>
                     </div>
