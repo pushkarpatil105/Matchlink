@@ -7,9 +7,9 @@
 
 ### Platform Views
 <div style="display:flex; gap:10px;">
-  <img src="screenshots/home.png" width="220" />
-  <img src="screenshots/card.png" width="220" />
-  <img src="screenshots/stats.png" width="220" />
+  <img src="screenshots/home.png.jpeg" width="220" />
+  <img src="screenshots/card.png.jpeg" width="220" />
+  <img src="screenshots/stats.png.jpeg" width="220" />
 </div>
 
 
