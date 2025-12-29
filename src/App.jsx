@@ -393,69 +393,44 @@ const App = () => {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-4 pb-4">
-              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm p-5 rounded-2xl border border-blue-500/30">
-                <h3 className="text-blue-300 font-semibold mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+            <div className="flex-1 space-y-3">
+              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm p-3 rounded-xl border border-blue-500/30">
+                <h3 className="text-blue-300 font-semibold mb-2 text-sm flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
                   Reality Stats
                 </h3>
-                <div className="space-y-4">
-                  {/* Acceptance Rate Progress Bar */}
-                  <ProgressBar
-                    percentage={acceptanceRateNum}
-                    label="Acceptance Rate"
-                  />
-
-                  {/* Ghost Rate Color-Coded */}
-                  <div
-                    className={`${ghostBgColor} p-3 rounded-xl border border-gray-600/30`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">
-                          {isHighGhostRate ? "👻" : "✨"}
-                        </span>
-                        <p className="text-gray-400 text-sm">Ghost Rate</p>
-                      </div>
-                      <p className={`text-2xl font-bold ${ghostColor}`}>
-                        {ghostRateNum !== null ? `${ghostRateNum}%` : "..."}
-                      </p>
+                <div className="space-y-2">
+                  {/* Acceptance & Ghost Rate in one row */}
+                  <div className="flex gap-2 text-xs">
+                    <div className="flex-1">
+                      <p className="text-gray-400 text-xs mb-1">Acceptance</p>
+                      <p className="text-green-300 font-semibold">{acceptanceRateNum !== null ? `${acceptanceRateNum}%` : "..."}</p>
                     </div>
-                    {isHighGhostRate && (
-                      <p className="text-red-300 text-xs mt-2">
-                        ⚠️ High ghosting rate - responses may be slow
-                      </p>
+                    <div className="flex-1">
+                      <p className="text-gray-400 text-xs mb-1">Ghost Rate</p>
+                      <p className={`font-semibold ${ghostColor}`}>{ghostRateNum !== null ? `${ghostRateNum}%` : "..."}</p>
+                    </div>
+                    {responseDaysRaw !== "..." && (
+                      <div className="flex-1">
+                        <p className="text-gray-400 text-xs mb-1">Response</p>
+                        <p className="text-indigo-300 font-semibold">{Math.round(responseDaysRaw)}d</p>
+                      </div>
                     )}
                   </div>
-
-                  {/* Response Days */}
-                  {responseDaysRaw !== "..." && (
-                    <div className="bg-indigo-900/30 p-3 rounded-xl border border-indigo-600/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">⏱️</span>
-                          <p className="text-gray-400 text-sm">Avg Response Time</p>
-                        </div>
-                        <p className="text-2xl font-bold text-indigo-300">
-                          {responseDaysRaw !== "..." ? `${Math.round(responseDaysRaw)} days` : "..."}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
               {requiredSkills && (
-                <div className="bg-gray-800/30 backdrop-blur p-4 rounded-2xl border border-gray-700/30">
-                  <p className="text-gray-400 text-sm mb-2">Required Skills</p>
-                  <div className="flex flex-wrap gap-2">
+                <div className="bg-gray-800/30 backdrop-blur p-2 rounded-xl border border-gray-700/30">
+                  <p className="text-gray-400 text-xs mb-1">Skills</p>
+                  <div className="flex flex-wrap gap-1">
                     {requiredSkills
                       .split(",")
-                      .slice(0, 6)
+                      .slice(0, 5)
                       .map((skill, i) => (
                         <span
                           key={i}
-                          className="bg-purple-600/30 text-purple-200 px-3 py-1 rounded-full text-sm border border-purple-500/30"
+                          className="bg-purple-600/30 text-purple-200 px-2 py-0.5 rounded-full text-xs border border-purple-500/30"
                         >
                           {skill.trim()}
                         </span>
