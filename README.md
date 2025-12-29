@@ -5,16 +5,13 @@
 
 ##[DEMO link]:- https://matchlink-internship.web.app/
 
-## Demo Screenshots
+### Platform Views
+<div style="display:flex; gap:10px;">
+  <img src="screenshots/home.png" width="220" />
+  <img src="screenshots/card.png" width="220" />
+  <img src="screenshots/stats.png" width="220" />
+</div>
 
-### Internship Card View
-![Internship Card](screenshots/card.png.jpeg)
-
-### Reality Stats & Skill Match
-![Reality Stats](screenshots/stats.png.jpeg)
-
-### Home Page
-![HomePage](screenshots/home.png.jpeg)
 
 
 
