@@ -357,10 +357,17 @@ const App = () => {
                       fill="currentColor"
                     />
                   </div>
-                  <div className="flex items-center gap-2 text-purple-300">
+                  <div className="flex items-center gap-2 text-purple-300 mb-3">
                     <Briefcase className="w-5 h-5" />
                     <p className="text-xl">{role}</p>
                   </div>
+                  {acceptanceRateNum !== null && (
+                    <div className="inline-block bg-blue-500/20 px-3 py-1 rounded-full border border-blue-400/50">
+                      <p className="text-blue-300 text-sm font-semibold">
+                        📊 {acceptanceRateNum}% Acceptance Rate
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-4 py-2 rounded-full shadow-lg shadow-green-500/50 flex-shrink-0">
                   <div className="flex items-center gap-2">
